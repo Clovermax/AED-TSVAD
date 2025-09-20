@@ -53,41 +53,6 @@ from pyannote.audio.pipelines.utils import PipelineModel
 from pyannote.audio.utils.signal import binarize
 
 
-def batchify(iterable, batch_size: int = 32, fillvalue=None):
-    """Batchify iterable"""
-    # batchify('ABCDEFG', 3) --> ['A', 'B', 'C']  ['D', 'E', 'F']  [G, ]
-    args = [iter(iterable)] * batch_size
-    return itertools.zip_longest(*args, fillvalue=fillvalue)
-
-def load_scp(scp_file: str) -> Dict[str, str]:
-    """ return dictionary { rec: wav_rxfilename } """
-    lines = [line.strip().split(None, 1) for line in open(scp_file)]
-    return {x[0]: x[1] for x in lines}
-
-def get_dtype(value: int) -> str:
-    """Return the most suitable type for storing the
-    value passed in parameter in memory.
-
-    Parameters
-    ----------
-    value: int
-        value whose type is best suited to storage in memory
-
-    Returns
-    -------
-    str:
-        numpy formatted type
-        (see https://numpy.org/doc/stable/reference/arrays.dtypes.html)
-    """
-    # signe byte (8 bits), signed short (16 bits), signed int (32 bits):
-    types_list = [(127, "b"), (32_768, "i2"), (2_147_483_648, "i")]
-    filtered_list = [
-        (max_val, type) for max_val, type in types_list if max_val > abs(value)
-    ]
-    if not filtered_list:
-        return "i8"  # signed long (64 bits)
-    return filtered_list[0][1]
-
 class SpeakerDiarization(SpeakerDiarizationMixin, Pipeline):
     """Speaker diarization pipeline
 
