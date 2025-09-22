@@ -1,0 +1,121 @@
+chunk_size: 8
+chunk_shift: 6
+sample_rate: 16000
+train_batch_size: 20
+save_dir: "path/to/your/exp_dir"
+metadata_dir: "path/to/your/metadata_dir"  # for example: {BASE_PATH}/AED-TSVAD/recipes/diar_wavlm/data/Compound_SIM for "Compound_SIM training"
+pretrained_ckpt_path: "path/to/your/WavLM-Base+.pt"
+max_speakers: 10  # can be larger
+
+meta:
+  mixed_precision: "no"
+  save_dir: ${save_dir}
+  seed: 3407
+
+finetune:
+  finetune: false
+# finetune:
+#   finetune: true
+#   ckpt_dir: ""
+#   avg_ckpt_num: 10
+#   val_mode: "best"
+
+trainer:
+  path: "sd_trainer_dual_opt.Trainer"
+  args:
+    max_epochs: 50
+    # max_steps: 0
+    gradient_percentile: 90
+    gradient_history_size: 1000
+    save_max_score: false
+    save_ckpt_interval: 1
+    max_patience: 10
+    max_num_checkpoints: 200
+    gradient_accumulation_steps: 1
+    validation_interval: 1
+    freeze_ssl: false
+    lr_decay: false  # ReduceLROnPlateau
+    use_one_cycle_lr: false
+    validation_before_training: true
+    warmup_steps: 1000
+    # warmup_ratio: 0.1
+    plot_norm: true
+    plot_lr: true
+    scheduler_name: "cosine_schedule_with_warmup"  # or "linear_schedule_with_warmup", "cosine_schedule_with_warmup", "cosine_with_hard_restarts_schedule_with_warmup", "polynomial_decay_schedule_with_warmup"
+
+optimizer_big:
+  path: "torch.optim.AdamW"
+  args:
+    lr: 1e-4
+    betas: [0.9, 0.999]
+    eps: 1e-8
+    weight_decay: 0.01
+
+optimizer_small:
+  path: "torch.optim.AdamW"
+  args:
+    lr: 1e-5
+    betas: [0.9, 0.999]
+    eps: 1e-8
+    weight_decay: 0.01
+
+model:
+  path: "models.model_wavlm-base+.Model"
+  args:
+    wavlm_dir: ${pretrained_ckpt_path}
+    wavlm_layer_num: 13
+    wavlm_feat_dim: 768
+    sample_rate: ${sample_rate}
+    embedding_dim: 256
+    hidden_dim: 256  # hidden_dim of conformer encoder and transoformer decoder
+    conformer_ffn_hidden: 1024
+    conformer_num_head: 4
+    conformer_num_layer: 4
+    conformer_kernel_size: 31
+    conformer_dropout: 0.1
+    decoder_num_heads: 4
+    decoder_ffn_num_hiddens: 1024
+    decoder_layers: 4
+    decoder_dropout: 0.0
+    max_speakers: ${max_speakers}
+    chunk_size: ${chunk_size}
+    num_channels: 1
+    selected_channel: 0
+
+train_dataset:
+  path: "dataloaders.dataset_rvector.TSVADDiarizationDataset"
+  args:
+    scp_file: ${metadata_dir}/train/wav.scp
+    rttm_file: ${metadata_dir}/train/rttm
+    uem_file: ${metadata_dir}/train/all.uem
+    emb_root: ${metadata_dir}/train/embs_single_spk
+    training_emb_root: ${metadata_dir}/train/embs_single_spk
+    emb_random: true
+    chunk_size: ${chunk_size}
+    chunk_shift: ${chunk_shift}
+    max_speakers: ${max_speakers}
+    sample_rate: ${sample_rate}
+  dataloader:
+    batch_size: ${train_batch_size}
+    num_workers: 4
+    drop_last: true
+    pin_memory: true
+
+validate_dataset:
+  path: "dataloaders.dataset_rvector.TSVADDiarizationDataset"
+  args:
+    scp_file: ${metadata_dir}/dev/wav.scp
+    rttm_file: ${metadata_dir}/dev/rttm
+    uem_file: ${metadata_dir}/dev/all.uem
+    emb_root: ${metadata_dir}/dev/embs_single_spk
+    training_emb_root: ${metadata_dir}/train/embs_single_spk
+    emb_random: false
+    chunk_size: ${chunk_size}
+    chunk_shift: ${chunk_size}
+    max_speakers: ${max_speakers}
+    sample_rate: ${sample_rate}
+  dataloader:
+    batch_size: 8
+    num_workers: 1
+    drop_last: false
+    pin_memory: true

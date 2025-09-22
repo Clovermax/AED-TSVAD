@@ -204,7 +204,3 @@ __marimo__/
 
 # ignore
 .vscode/
-recipes/diar_wavlm/configs/
-recipes/diar_wavlm/data/
-recipes/diar_wavlm/RUN_EVAL/
-recipes/diar_wavlm/RUN_TRAIN/
