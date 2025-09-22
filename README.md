@@ -8,7 +8,7 @@ Pretrained checkpoints, together with training logs and evaluation results are a
 
 ## Data split
 
-Detailed data split is available [here](recipes/diar_wavlm/data)
+Detailed data split is also available [here](https://drive.google.com/drive/folders/1xVZNnkix5mDpIqsfZEFbmqpmoKQgelxV), you should put the `data` folder under `recipes/diar_wavlm`
 
 Single-channel recordings are used as released. For multichannel data, we use the first channel (for CHiME-6, the first channel of the first array). Official train/dev/eval splits are adopted when available. For AISHELL-4 which lacks an official development set, we follow the split used in DiariZen[1]. For datasets providing only development and evaluation sets (e.g., DIHARD and VoxConverse), we follow the split in SSND[2] by using the first 80\% of the original development set for training and the remaining 20\% for validation. For NOTSOFAR-SC, we use single-channel sessions from training sets 1 and 2 for training and dev set 1 for validation.
 
